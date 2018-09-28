@@ -1,0 +1,361 @@
+% Problem Set 2 
+% Luke Schwenke
+% September 26, 2018
+
+# Linear Algebra
+#### 1.
+a) Convert the **educ** vector to a matrix of dummies (X):
+		mata
+		vec1=(2\3\2\1\1)
+		vec1
+	
+		X = (1,0,1,0\1,0,0,1\1,0,1,0\1,1,0,0\1,1,0,0)
+		X
+
+Each column of x represents the three levels of educational attainment. If the individual falls in one of those 3 columns where a 1 is located, it will affect his predicted outcome by using the coefficient where the 1 is plus the constant. This value will be his predicted outcome.
+
+
+   b) Check the rank of **X** and discuss the findings:
+		rank(X)
+		
+The rank is reported to be 3 which is accurate because 
+that is the maximum number of linearly independent column vectors of our matrix X minus our column of constants.
+A linear combination can be made using the column of ones which is part of the dummy variable trap and multicollinearity. This is why this matrix does not have rank 4 and is not considered a full rank matrix.
+
+		end
+		
+#### 2.
+		
+a) Calculate the inverse of z:
+
+		mata
+
+		z = (2,6\9,2) 
+		m = (4\8) 
+		d = (2\11)
+		
+Since z is not symmetric, use the luinv:
+		luinv(z)
+		
+b) Show that z'z is symmetric and square:
+
+		a = z'z
+		b = a'
+		a
+		b
+		
+		z'
+
+		
+Since z'z is equal to its transpose (a=b) , z'z is symmetric. 
+The matrix is square since it is a 2x2 matrix.
+
+
+c) Show that (zm)' = m'z':
+
+		(z*m)'
+		m'z'
+
+From the output above, we can see these two 1x2 matrices are equivalent.
+
+
+d) Show that m'zd = d'z'm, and why it holds for this case:
+		
+		m'*z*d
+		d'*z'*m
+
+From the output above, we can see these two calculations are equivalent because of the transpose property. A scalar is always equal to its transpose. 
+
+		end
+		
+# The Ordinary Least Squares Model
+#### 3.
+
+		mata
+
+		y = (3\1\2)
+		x1 = (1\2\3)
+		x = (1,1\1,2\1,3)
+		
+a) Calculate the OLS estimator for b1 and b0:
+
+		b = invsym(x'x)*x'y
+		b
+
+b) Now show that x1'e = 0. First generate the error e:
+
+		e = y-x*b
+		x'e
+
+This calculation does not equal 0 exactly, but it is close enough to ensure that our estimate is unbiased.
+This is related to the following OLS assumption:
+$$
+E[x'\epsilon] = 0
+$$
+
+e is our best estimator for Epsilon.
+
+
+c) Show that **e'e = (y-xb)'(y-xb)** and calculate the minimum value of e'e based on parameter estimates:
+
+		e
+		(0.5)^2 + (-1)^2 + (0.5)^2
+		e'e
+		(y-x*b)'*(y-x*b)
+
+All three values above are equal (1.5)
+		
+Minimum Value of e'e:
+
+		-2*x'y + 2*x'x*b
+	
+d)		
+		e*e'
+		rows(e*e')
+		cols(e*e')
+
+Discuss the types of information that is contained in **ee'** relative to **e'e**:
+The summation of the diagonal in e*e' is equal to e'e (1.5). This is the error variance wheres the 
+off diagonals are the covariance.
+
+#### 4.
+
+a) Show to you get the same parameter estimates if a regression is run on the following. Below is a numerical example to help understand the concept. The full portion is written by hand separately.
+		
+		alpha = 5 
+		y_star = y * alpha
+		x_star = x * alpha
+		y_star
+		x_star
+
+		b_new = invsym(x_star'x_star)*x_star'y_star
+		b_new
+
+From this, you can see it has the same answer as the old b value:
+
+		b
+		b_new
+
+
+b) Write down the formula for the OLS estimate of B in terms of x and y:
+		y_star = y
+		x_star = x*alpha
+		
+		beta = invsym(x_star'x_star)*x_star'y_star
+		beta
+
+#### 5.
+
+Show that the OLS predicted value is distributed normally:
+
+1 - Linear in parameters
+2 - No linear relationships between columns
+3 - Exogeneity of independent variables
+4 - Homoskedasticity and no auto correlation
+5 - Normally distributed errors
+
+Written on separate sheet.
+
+		end
+		
+#### 6. 		
+		
+		webuse set "http://rlhick.people.wm.edu/econ407/data"
+		webuse mroz
+
+Dependent Variable:
+ 
+- WHRS (Wife's hours of work in 1975)
+
+Independent Variables: 
+
+- LFP (Dummy variable = 1 if woman worked in 1975, else 0)
+
+- KL6 (Number of children less than 6 in household)
+
+- K618 (Number of children between ages 6 and 18 in household)
+
+- WA (Wife's Age)
+
+- WE (Wife's educational attainment, in years)
+
+- WW (Wife's average hourly earnings, in 1975 dollars)
+
+- RPWG (Wife's wage reported at the time of the 1976 interview)
+
+- FAMINC (Family income, in 1975 dollars)
+ 
+- AX (Actual years of wife's previous labor market experience)
+
+
+**Justification:**
+I chose these independent variables because the number of children a woman has is very relevant to how many hours she is going to work.
+The lfp variable needed to be included because it represents the woman who worked and the women who did not.
+For instance, if I woman has many children she may need to work more hours to provide for them. Once they have left for college at 18,
+she may no longer need to work more to pay for college tuition, depending on the child. If the woman has younger children (less than 6 years old) she may want to work less and stay
+home to raise them herself. The wife's age is also relevant because younger women may work more as they are establishing their careers
+and do not have positions with more freedom in terms of work hours. Education level plays a big factor in the types of jobs women get
+which in turn determines their hours. The reported wage at the time of the interview can be indicative of the hours too since people who
+work for less money will have to work more to make ends meet. Taking a look at the family's income as a whole is also important
+because if there is more supplemental income (husband, siblings, etc.) the woman may not have to work as much. Finally, the years of
+the wife's experience will determine how many hours she works. As mentioned, women higher up will probably have more freedom with their
+hours and in turn will work less. 
+
+
+**Regression:**
+a)
+		sum
+	
+This database has the same sample size used as mroz (753). 428 of these women worked for pay.
+Below are histograms of each of the independent variables:
+
+		hist lfp
+		graph export lfp.png, replace
+		
+![Histogram of lfp](lfp.png)
+
+		hist kl6
+		graph export kl6.png, replace
+		
+![Histogram of kl6](kl6.png)
+		
+		hist k618
+		graph export k618.png, replace
+		
+![Histogram of k618](k618.png)
+		
+		hist wa
+		graph export wa.png, replace
+		
+![Histogram of wa](wa.png)
+		
+		hist we
+		graph export we.png, replace
+		
+![Histogram of we](we.png)
+		
+		hist ww
+		graph export ww.png, replace
+		
+![Histogram of ww](ww.png)
+		
+		hist rpwg
+		graph export rpwg.png, replace
+		
+![Histogram of rpwg](rpwg.png)
+		
+		hist faminc
+		graph export faminc.png, replace
+		
+![Histogram of faminc](faminc.png)
+		
+		hist ax
+		graph export ax.png, replace
+		
+![Histogram of ax](ax.png)
+		
+		correlate(lfp kl6 k618 wa we ww rpwg faminc ax)
+
+**Explanation:** 
+The histograms of the variables also look fairly normal for the most part. We can consider transforming the dollar amounts by natural logarithms to account for their skew.
+After examining the correlations, there does not appear to be anything too strong between any of the variables which is also good for us. I proceeded with this model.
+
+b)
+		reg whrs lfp kl6 k618 wa we ww rpwg faminc ax
+		reg whrs lfp kl6 k618 wa we ww rpwg faminc ax, robust
+		
+The results show a fairly strong R-squared of 63.87%. (interpretation further down)
+Additionally, all of the coefficients have low p-values meaning they are significant. The residuals are also not too high meaning there is not a far deviation from the actual value.
+I still believe these parameters are useful from this point.
+
+c)
+
+1.
+
+-Generate column of ones for constant:
+		gen ones = 1
+	
+		mata
+
+-Create independent and dependent variables:
+		y = st_data(.,"whrs")
+		x = st_data(.,"lfp kl6 k618 wa we ww rpwg faminc ax ones")
+
+-Find the betas:
+		b_new = invsym(x'x)*x'y
+		b_new
+		
+-Calculate the root mean square error (RMSE):
+		N = rows(x)
+		K = cols(x)
+		N
+		K
+		e_new = y-x*b_new
+		RMSE = sqrt(e_new'e_new / (N - K))
+		
+		RMSE
+
+-Calculate the standard errors:
+		SSE = (e_new'e_new / (N - K))
+		standard_errors = diagonal(sqrt(SSE * invsym(x'x)))
+		
+		standard_errors
+
+-Calculate the t-statistics:
+		t_stat = b_new :/ standard_errors
+		
+		t_stat
+
+2. 
+
+Calculate the R-Squared value and interpret it:
+		yhat = x * b_new
+		ybar = mean(y)
+		MSS = (yhat :-ybar)'(yhat :-ybar)
+		TSS = (y :-ybar)'(y :-ybar)
+		R_Squared = MSS/TSS
+		
+		R_Squared
+-This means that 63.87% of the variation in our dependent variable (whrs) can be explained by our independent variables.
+
+3.
+
+Calculate the Robust Standard Errors. Interpret your results and describe how the
+model predicted error e is used to “fix” the standard errors:
+		
+		e = y-x*b_new
+		
+		Vhat = diag(e*e')
+		Robust = invsym(x'x)*x'*Vhat*x*invsym(x'x)
+		sqrt(diagonal(Robust))
+
+		end
+
+We use the robust standard error to fix our heteroskedasticty problem by giving us unbiased standard errors. 	
+We get the standard error for each x. We consider every x value instead of assuming it is the same like with normal standard errors.
+We may want to use these robust standard errors when we have rejected our null hypothesis and concluded heteroskedasticity is present. 
+		
+d) 
+
+**Estat Hettest:**
+		reg whrs lfp kl6 k618 wa we ww rpwg faminc ax
+		estat hettest
+		
+**Manual:**
+
+		predict yhat
+		predict e, resid  
+		gen r = e^2 / (e(rss) / (e(N)))
+		reg r yhat
+		display "Chi Square(1) =" e(mss)/2
+		
+The intuition is to test whether the variance of the errors from a regression is dependent on the 
+values of the independent variables. From our model, because of our low Chi-Squared value of 0.0000, we will Reject our null hypothesis and conclude
+that our model has unrestricted heteroskedasticity. This is bad because we want homoskedasticity.
+
+End of stmd file
+
+
+
+
+
