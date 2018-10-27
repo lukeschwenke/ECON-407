@@ -1,0 +1,337 @@
+% Problem Set 3 
+% Luke Schwenke
+% October 22, 2018
+
+# Question 1
+
+- Written on separate sheet of paper
+		
+# Question 2
+
+		set linesize 255
+		webuse set http://rlhick.people.wm.edu/econ407/data
+		webuse fertility
+		
+#### (a) 
+Estimate an equation of the effect of education on the age at which women have their first child:
+
+**Dependent** **Variable:**
+
+- agefbrth = age of woman when she had her first child
+
+**Independent** **Variables:**
+
+- educ = years of education
+- educ0 = 1 if education, 0 else
+- urban = 1 if lives in urban area, 0 else
+- urbeduc = urban*educ
+
+		reg agefbrth educ educ0 urban urbeduc
+		
+		sum
+
+		
+1. **Explanation:**
+- I chose this model to estimate which age women have their first child (agefbrth) because the 4 independent variables made the most sense to me.
+Educ, which measures years of education, is absolutely necessary since it will show how educated the women are. This variable is needed 
+to make sense of our goal and answer our question. Similarly, the dummy variable educ0 is neccessary to denote if the woman has any education at all.
+Note: I discuss educ0 more in depth in another part of this problem set.
+I also thought including the urban variable was important since it denotes whether a woman lives in an urban area or not. Generally, people
+who live in cities are more educated for a number of reasons (more opportunities in the city, higher wages, etc.). Finally, the interaction
+variable of urbeduc will capture what I just spoke to by combining education and urban living. I wanted to keep the model smaller (only 4 independent variables)
+so I could really see the impact of education on the age a woman has her first child. 3/4ths of the variables I included have education involved. The only variable that doesn't
+is urban so I thought it would be good to include. 
+
+- I did not include other variables because I believe they were not as useful for the question we are trying to answer. We are trying to examine the effect of
+education on the age at which women have their first child. This means that a lot of the other variables such as religion, electric, bicycle, etc. do 
+not provide useful insight or contributions for us. It can further complicate the model as well.
+
+- After running the regression and examining the summary statistics, we can see all of these coefficients are statistically significant and have minimal
+standard errors for the most part. The R-Squared value is not very high (0.048) which suggests only 4.8% of the variability of the age of woman when she had her 
+first child can be explained by our explanatory variables. Desipite the low R-Squared value, I believe it is still useful to proceed with this model. The F-statistic also deems our model to be overall useful.
+
+		hist agefbrth
+		graph export agefbrth.png, replace
+
+![Histogram of agefbrth (y)](agefbrth.png)
+
+- It is very important to first examine the the histogram of our dependent variable. From this graph, we can see it is distributed normally, which is good.
+There are also not any outliers. We do not have to worry about adjusting or transforming this variable in any way.
+
+		reg agefbrth educ educ0 urban urbeduc
+		rvfplot, yline(0)
+		graph export graphit.png , replace
+		
+![Residual Plot](graphit.png)
+
+- It is also useful to look at the distribution of the residuals. These appear to be random which is also good for our situation.
+
+
+
+2. Comment on the inherent exogeneity assumptions and interpret findings in this regression:
+According to our exogeneity assumptions:
+
+- Our inherent exogeneity assumption states that there does not exist a correlation between our independent variable(s) and our error (epsilon).
+Moreover, x will impact y directly, and epsilon will impact y directly. We do not want a situation where epsilon impacts x. 
+This is based on the orthogonality condition where E[x'$\epsilon$] = 0 and means there is not bias.
+In the context of this model and the exogeneity assumptions, our educ, educ0, urban, and urbeduc are not correlated with epsilon.
+The estimates for beta also need to be unbiased.
+
+- From the model, we can see educ, educ0, and the interaction variable urbeduc have a positive effect on agefbrth. This means that women with more educ
+are essentially more likely to be older when they have their first child. The variable urban is negative which means women who reside in urban areas generally
+have children at younger ages. The constant of course means when the other values are 0, the average age a woman has her first child is 17.78.
+All of these findings make logical sense. As mentioned above, the coefficients are statistically signifianct, the standard errors are small,
+and the model is overall useful based on our F-statistics. The only real concern is the low R-Squared value.
+
+		corr
+
+#### (b) 
+Hypothesize which variable might be endogenous (Xk) and provide an explanation of the nature of the hypothesize endogeneity problem:
+
+- After thinking about engodeneity and which of the variables could be determined or influenced by one or more of the independent variables, I would hypothesize
+that the **educ** **variable** **is** **endogenous**. I say this because this variable's value will shift/change based on the other variables in the model.
+If the coefficient on urban increases, this will increase the education levels since people who live in urban areas have more opportunity for education.
+Similary when we see a decrease in the urban coefficient, this will lower the educ coefficient. 
+
+- I believe educ fits into the idea of **simultaneity** which is a specific type of endogeneity problem in which the explanatory variable is jointly determined with
+the dependent variable. In generalized terms, X causes Y but Y also causes X. I think this is the case because educ and agefbrth will both adjust alongside each other. 
+As a woman acquires more education, the age at which she has her first child will increase. Similarly if she has less education, the age at which she has her first
+child will be less.
+
+- Based on the correlation table from above, we can also see values of 0.3099, 0.7407, and -0.7399 with urban, urbeduc, and educ0 respectively.
+These values confirm a strong relationship with the urban variable, urbeduc, and educ0. I will proceed with **educ** as **Xk**.
+
+- I do not think the other variables I have included are endogenous other than possibly urban. This could be the reverse of my above argument which states women
+generally are more educated because they live in the city. In this case, women may live in the city more because they are more educated. Though this is important
+to think about, I think educ is still the likely more endogenous variable which induces bias.
+
+- I contemplated if I should remove educ0. I ran two different models with it included, and with it removed. I think the results it gave me when I included educ0
+were more ideal and useful. It seems like it would cause a similar problem like educ but I decided to continue with it in the model because of the results mentioned.
+
+- Finally, we hypothesize the endogeneity problem because it is very important to talk about in an econometrics problem since it comes up so much. 
+In a legal situation, the first point of attack for the opposing side will be to make your model seem endogenous. The problem of endogeneity is something
+that is necessary to work around in order for your findings to be considered valid. Without hypothesizing this problem and discussing endogeneity, our model results may not have much validity. 
+
+
+#### (c)
+Consider an IV regression approach and use one instrumental variable for Xk. Test for the relevancy. How does my interpretation effect the independent
+variables in the instrumental variables regression compare to the OLS regression:
+
+		corr educ agefbrth mnthborn
+
+- For my IV, I will choose **mnthborn** since the month a woman is born in will not correlate strongly (-0.036 above) with the age a woman has her first child.
+mnthborn will only be correlated with agefbrth (y) via our Xk (endogenous) variable educ. It will be correlated with educ because the month you are
+born CAN determine how much education you acquire. This is because of the cutoffs for when people are first placed into school. For example, if the cutoff is 
+October 1st and you are born the 2nd, you may not perform as well and get more education since you will be the youngest in your class. Conversely, if you were
+born in late September, you may be more developed and therefore be more successful with education. I believe mnthborn is also uncorrelated with our true model error. (E[zk' $\epsilon$ ] =0)
+The rank of the instrument (z) will also be equal to k.
+		
+		reg agefbrth educ educ0 urban urbeduc
+		margins, eyex(educ)
+		ivregress 2sls agefbrth educ0 urban urbeduc (educ = mnthborn) 
+		margins, eyex(educ)
+* Relevancy Test
+		estat firststage
+		
+- This ouput reveals that the instrument is **not** **strong** because the F-statistic is less than 10 with a value of 9.14398.
+However the instrument **is** **relevant** because the p-value is less than 0.05 with a value of 0.0025.
+
+- Examining the interpretation compared to my OLS regression, the value of educ (endogenous) has changed from 0.0445 to -0.4466.
+In our OLS regression, a 1% increase in educ led to a 0.0445 increase in agefbrth.
+Now a 1% increase in educ leads to a 0.4466 decrease in agefbrth once the instrumental variable (mnthborn) is implemented. 
+
+- This is a pretty small change which is good because a big change in the coefficient can mean there is a big difference when showing endogeneity.
+The fact that the coefficient is now negative can be related to timing issues with the study. Women who were 40 may have been asked
+when they had their first child while at the same time asking how much education they have. There can be a lot of differences/disecrepancies with this timing.
+
+- I also note that the R-squared value is now 0.77, which is much stronger than 0.04.
+
+#### (d)
+Explain why the instrument meets the requirements for a good instrumental variable:
+
+- I believe mnthborn is still a good instrument to use for a few reasons. Firstly, it was found to be relevant based on the output above.
+Secondly, the instrument may not have an F-statistic > 10 which would make it strong (though 9.14 is close) and invoke some bias, but the other variables do
+not have as solid of a "story-telling" background as mnthborn. The year the woman was born (yearborn) may work too but I think this
+is a better option. I can consider using yearborn as my second instrument further in this study so that the strength test can be passed. I also believe mnthborn is not correlated with the true model error
+and it does not directly impact our dependent variable. Once again, I believe mnthborn is correlated with the endogenous educ term, and will only effect agefbrth (y) through this term Xk.
+
+#### (e)
+Replicate the parameters and standard errors in mata.
+
+Coefficients: 
+
+		gen ones = 1
+		drop if mi(agefbrth)
+		drop if mi(educ0)
+		drop if mi(urban)
+		drop if mi(urbeduc)
+		drop if mi(mnthborn)
+		drop if mi(educ)
+
+		mata
+		
+		y = st_data(., "agefbrth")
+		z = st_data(., "educ0 urban urbeduc mnthborn ones")
+		x = st_data(., "educ0 urban urbeduc educ ones")
+		
+		biv = luinv(z'x)*z'y
+		biv
+		
+*Other Method (gives same answer)
+		xhat = z*luinv(z'z)*z'x
+		biv2 = luinv(xhat'xhat)*xhat'y
+		biv2
+		
+Standard Errors:
+		
+
+		N = rows(z)
+		K = cols(z)
+		e = y-x*biv
+		pz = z*(luinv(z'z))*z'
+		SSE = (e'e / (N - K))
+		standard_errors = diagonal(sqrt(SSE * luinv(x'pz*x)))
+		
+		standard_errors
+		
+		end
+		
+- From these results, we can see those **closely** **match** the coefficients and standard errors from the 2sls model. It is important to note that they do not appear in the same
+order due to some changes, but the values are still pretty much equivalent nonetheless. 
+
+#### (f)
+Conduct a test for the endogeneity Xk (educ) and provide an explanation of how this test works:
+
+		reg educ educ0 urban urbeduc mnthborn
+		test mnthborn
+		predict rhat, resid
+		hist rhat
+		graph export rhat.png, replace
+
+![Graph of rhat](rhat.png)
+
+		reg agefbrth educ educ0 urban urbeduc rhat
+		test rhat = 0
+		
+OR we can use a shorter method:
+
+		ivregress 2sls agefbrth educ0 urban urbeduc (educ = mnthborn)
+		estat endogenous
+		
+**Results:** 
+Based on these results from the test for endogeneity, we will **Reject** **Ho** and conclude endogeneity is present.
+We therefore want to use our instrumental variable regression.
+
+**Explanation** **of** **test:**
+This method essentially tests conditionally if you have a good instrument, is there an edogeneity problem?
+The purpose of rhat (residual) above is to show the correlated part of Xk. It is then controlled for in our estimation.
+The residual should only include the endogenous part of xK (if any exists), since we have controlled for all exogenous
+information at our disposal (x−K and zK ). If this endogenous part of xK is useful for predicting y after we control for our full set of original regressors (x), then this
+provides evidence of significanct differences in our regressors because there is a part of xK that is correlated with y via the error term.
+
+#### (g)
+Now add a second instrument and make the case again for why it meets the requirements:
+
+- For my second IV, I will choose **yearborn** which represents the year a woman was born in. This is another option for an IV
+because it should also not correlate with when a woman has her first child. This term should also be correlated with educ. This may be because a woman was born in a year
+that turned into an economic boom years down the road when she was looking to attend school. Maybe during this time there were more 
+educational opportunities so the year she was born helped her achieve more education. This would make it correlated with educ then and the instrument
+would only impact our dependent variable through the Xk term.
+
+- It is also important to note that this study was taken in 1988 when women had children at younger ages. This could have some correlation with education as well. 
+
+		ivregress gmm agefbrth educ0 urban urbeduc (educ = mnthborn yearborn)
+		estat firststage
+		margins, eyex(educ) continuous atmeans
+
+- From this output, we can see a high F-statistic with a value of 63.9046 which means out this set of instrumental variables are **jointly** **strong** **and** **relevant** (p-value 0.0000).
+It has changed from 0.0445 (OLS) to -0.4466 (One IV) to now -0.7748 (2 IV's). An interpretation of this reveals a 
+1% increase in educ leads to a 0.7748 decrease in agefbrth.
+
+- Once again, this is a pretty small change which is good because a big change in the coefficient can mean there is a big difference when showing endogeneity.
+The fact that the coefficient is now negative again can be related to timing issues with the study. Women who were 40 may have been asked
+when they had their first child while at the same time asking how much education they have. There can be a lot of differences/disecrepancies with this timing.
+
+#### (h)
+Conduct a test for the endogeneity Xk (educ) and provide an explanation of how this test works (2 IV, 1 endog):
+
+		estat endogenous
+		
+**Results:**
+Based on these results from the test for endogeneity, we will **Reject** **Ho** and conclude endogeneity is present.
+We therefore want to use our instrumental variable regression once again (in this case with 2 IV's).
+
+**Explanation** **of** **test:**
+This method essentially tests conditionally if you have a good instrument (2 in this case), is there an edogeneity problem?
+The residual should only include the endogenous part of xK (if any exists), since we have controlled for all exogenous
+information at our disposal (x−K and zK ). If this endogenous part of xK is useful for predicting y after we control for our full set of original regressors (x), then this
+provides evidence of significanct differences in our regressors because there is a part of xK that is correlated with y via the error term.
+
+#### (i)
+Conduct a test for overidentification. What is the problem and what is the intuition of this test:
+
+		estat overid
+
+- From this output, we can see we have a p-value of 0.2195 which is greater than our desired threshold of 0.1. This means we will **Fail** **to** **Reject** **Ho**. 
+<u>Intuitively</u> this test is looking to see if we have inadvertently added correlation. If our errors (from 2sls) can be explained well using information contained 
+in our IV's, then we do not have good instruments, since we need them to be uncorrelated with the error. Rather than test each excluded IV sequentially, the Sargan approach jointly tests whether 
+overidentification is a problem or not. If it is, we should consider using a subset of IV's or search for new ones.
+In the case of our model, we have **not** **induced** **correlation** between our instrumental variables and error. (This is a good thing)
+
+**Problem:**
+
+-Rejection of the null hypothesis of the tests implies at least one instrument is not valid (We do not know which). On the other hand, failure to reject the null hypothesis does not guarantee all instruments are valid.
+This means the Sargan test is not very powerful when there are many instruments.
+
+-The **main** **problem** however is that we can be inducing correlation and disrupting the orthogonality condition (z'$\epsilon$ = 0). We can induce correlation simply by the fact that we have
+more equations than uknowns. The correlation would exist between our e and z (matrix of exogenous data).
+
+#### (j)
+What is the rationale for using more than 1 instrument for Xk and risking overidentification:
+
+- The rational for using more than 1 instrument is that over-identification provides useful information about the fit of the model or about the parameters being estimated.
+It can help us see if endogeneity is present. Moreover, using more than 1 instrument gives greater precision and tigher more correct confidence intervals.
+The downside of course is that our model can be overidentified and provide poor approximations to the sampling distributions of the resulting estimators.
+I believe the results I got above when using 2 IV's reveals why we would want to risk overidentification. In my case, it increased my models strength 
+significantly and in turn gave more precise results, with less bias.
+
+*Reference:* Estimation with Many Instrumental Variables --> https://economics.mit.edu/files/1106
+
+#### (k)
+Critique your use of 2sls and gmm using outside sources:
+
+- 2sls is pretty usefulf or understanding classical IV regression whereas gmm is probably most useful for the majority of settings.
+
+- According to Wooldrige, the 2sls estimator is the most efficient IV estimator. It is essentially a special case of gmm with an overidentified model that 
+assumes homoskedasticity. Though if our errors have heteroskedasticity, 2sls will give an estimator that is consistent but no longer
+asymptotically efficient. This estimator is obtained by using all of the instruments simultaneously
+in the first stage regression. By definition, the OLS estimator of the first stage regression will construct the linear combination
+of the instruments most highly correlated with xK. By assumption all the instruments are
+exogenous, hence this procedure retains more exogenous variation in xK than would be the case for
+any other linear combination of the instruments. The source I used also discusses how including more instruments improves efficiency of the 2SLS
+estimator. However, it is not well known that having a very large number of instruments, relative to
+the sample size, results in potentially serious bias, especially if some/many/all of the instruments are
+only weakly correlated with the endogenous explanatory variable.
+
+- GMM is based on moment functions that depend on observable random variables and unknown
+parameters, and that have zero expectation in the population when evaluated at the true parameters.
+For overidentified models, the gmm estimator is asymptotically eficient if the
+weighted matrix is optimal. In the case of homoskedasticity, there will be no reason to use gmm since it will be the same as 2sls.
+If the weighted matrix is not optimal, gmm will improve on the 2sls estimate. The source does note some potentional drawbacks though for gmm.
+ONE: The definition of the weight of the matrix for the first step is arbitray, and different choices will lead to
+different point estimates in the second step. One possible remedy is to not stop after two iterations, but continue to update the weight
+matrix until some sort of convergence has been achieved. This estimator can be obtained by
+using the cue (continuously updated estimators) options within ivreg2. TWO: The other drawback are inference problems because the optimal weight matrix is estimated. 
+This can lead to sometimes severe downward bias in the estimated standard errors for the gmm estimator.
+
+- In the case of my work, I used 2sls when I only had 1 IV and gmm when I had 2 IV to account for those points mentioned above. 
+
+*Outisde* *Source:* http://www.soderbom.net/lec2n_final.pdf & http://fmwww.bc.edu/EC-C/S2014/823/EC823.S2014.nn02.slides.pdf
+
+
+
+
+
+
+
+
