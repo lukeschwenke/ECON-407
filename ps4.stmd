@@ -1,0 +1,355 @@
+% Problem Set 4
+% Luke Schwenke
+% November 14, 2018
+
+# Question 1
+
+	set linesize 255
+	webuse set http://rlhick.people.wm.edu/econ407/data
+	
+* Done: net search spost13_ado
+* Done: net install spost13_ado
+
+#### (a) 
+
+- Note: Attached as a separate handwritten sheet
+
+#### (b) 
+
+- Note: Attached as separate Excel spreadsheets
+
+#### (c) 
+
+- lambda = 8
+
+- -2*ln(8) = -4.158
+
+- P-value = 0.000 according to the poisson distribution (chi-sqr) table.
+
+- Additionally if we change our estimated mean from 14.26 to 8, we get a worse log likelihood estimate value. 
+
+- -281.23 (lamda = 14.26) is better than -479.48 (lamda = 8).
+
+- Now using the Likelihood Ratio: -2 * (lnL(Restricted) - lnL(Unrestricted)) = -2*(-479.48 - -281.23) = 396.5
+
+- Therefore, we **Reject** **Ho** at the 5% level and we can say this lambda is not as good as ours (14.26).  
+
+#### (d) 
+
+- From the Excel spreadsheets, we can see our Poisson log likelihood estimate is much lower with a value of -281.23.
+This means the value is closer to the MLE peak and makes this model the preferred model for the mean.
+
+# Question 2
+
+	webuse congressional_105
+
+#### (a) 
+When using this data to model part control of a house seat, should we interpret the model
+as a Random Utility or Varying Parameter Model?:
+
+- I believe we should interpret the model as a **Random** **Utility** model because the voter is faced with a situation or alternatives
+that reveal something about his/her underlying preferences and the choice that he/she makes. The choice made will be affected by observable
+influences (ex. politics using advertising which can appeal to this) as well as unobservable characteristics of the chooser. More specfically,
+the Random Utility equation would include the observable vector of characteristics of the individual as well as vectors denoting features/attributes. 
+Random terms in this model represent stochastic elements that are specific to and known only by the individual such as preferences to a Republican or Democrat.
+Overall, people are likely to vote by party so their individual characterstics don't really matter. This is why RU is more useful the VPM. 
+
+#### (b) 
+Estimate a binomial logit, a probit, and OLS model that models being represented by a Republican:
+
+	sum
+	
+First I will run the **OLS** and plot the predicted errors:
+
+Dependent Variable: 
+
+- REPUB = 1 if Republican, 0 otherwise
+
+Independent Variables:
+ 
+- AGE65 = Number of people older than 65 years 
+
+- BLACK = Number of people in district who are African American
+
+- BLUCLLR = Number of people in district who are employed in ”Blue Collar” work - machine operators, transportation and material
+moving and handlers
+
+- CD = Congressional District
+
+- CITY = 1 if district contains one of the 50 largest cities, 0 otherwise
+
+- GVTWRKR = Number of people working for federal, state, and local government
+
+- RURLFARM = Populating living in rural farm areas
+
+- URBAN = Total population living in urban areas
+
+- UNEMPLYD = Number of people who are unemployed
+
+- UNION = Total population living in urban areas
+
+	hist repub
+	graph export repub.png, replace
+
+![Histogram of repub (y)](repub.png)
+
+- This histrogram is expected since our dependent variable will have a binary output.
+
+**Explanation:**
+I chose **AGE65** to be one of my variables because people who are older generally tend to lean strongly to one political side over the other. In otherwords,
+there is not much midway but rather a discrete line. I thought it would be useful for modeling republicans because a larger population of older people
+may easily sway a district one way or another. My next variable I use is **BLACK** becuase the African American population is a large part of the democratic vote.
+This variable will be very useful in modelling our dependent variable. The next variable I decided to use was **BLUECLLR** since people in blue collar jobs also have strong preferences
+in terms of politics. They will usually want to always go with a candidate that is going to bring more safety to their job and also help them out economically.
+Once again, I believe there is a fine line with blue collar workers similar to elderly people which will be useful for predicting a republican. **CD** will be good to 
+include as well because this represents the district the voters fall in. I feel like these districts remain fairly consistent from election to election so their predictive
+power will be useful. My next variable is **CITY** which is essential because a lot of large cities (Seattle, San Francisco, Chicago, New York, Washington D.C.) are primarly focused around liberal ideas.
+I believe this is a very strong variable to use and will be helpful in modeling our dependent variable. **GVTWRKR** is my next variable because I think they typically 
+have liberal views because of their workplace environment and will be useful in predicting our dependent variable. The next variable I thought would be useful is **RURLFARM** because of the 
+opposite side of what I discussed with the CITY variable. In the case of rural areas, people tend to have much more conservative views and will gravitate strongly
+toward a republican vote. The next variable, **URBAN**, supplements my discussion of CITY because even cities outisde of the top 50 largest will have more liberal
+views than their more suburban and rural counterparts. I wanted to include the **UNEMPLYD** variable because I think they lean more towards liberal agendas in terms
+of increasing the minimum wage. They were also probably layed off from lower paying jobs which would go along with this intuition. Additionally college graduates are also
+liberal leaning and may have high unemployment rates. Finally, I used the **UNION** variable because people who fall in this case have very strong liberal views because of 
+worker's rights agendas, minimum wage, worker safety, and more. This is similar to my discussion with blue collar workers as well. 
+
+**OLS** **model:**
+
+	reg repub age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union
+	
+	estimates store OLS, title(OLS)
+	
+	predict ehat, resid
+	predict yhat
+	scatter ehat yhat
+	graph export ehat.png, replace
+
+![Scatter plot of Residuals](ehat.png)
+
+- It is important to note with OLS that this model can perform well in a variety of settings but there are some problems
+in this case like 1) the predicted value may not be constrained in the interval [0,1], the errors cannot be normally distributed (we can see this in the above residual plot),
+and there errors will be heteroskedastic. Finally, OLS estimation of the Linear Probability Model will be inconsistent unless it happens to be the case that 0 <= XiB <= 1, for every i. 
+
+**OLS** **Interpretation** **&** **Justification:**
+From the above results, we can see we have an adjusted R-Squared for this model at 0.1834 which suggests 18.34% of the variation in REPUB can be explained by our variables.
+This is not a very strong correlation but I wanted to proceed with this model because I believe my above intuition is correct. The model F-statistic has a prob > F = 0.0000
+so our model is overall useful. In terms of the coefficients, many of them are statistically insignificant (aside from URBAN, UNEMPLYD, UNION, and BLACK) but I still wanted
+to keep the insignificant variables in the model because of the information they can provide. The signs of AGE65, BLACK, BLUECLLR, CITY, URBAN, UNEMPLYD, and UNION are all negative
+which mostly aligns with my above intuition. This negative sign suggests that a 1% increase in those coefficients will result more in the vote going to a Democrat.
+The other coefficients which are positive (CD, GVTWRKR, RURLFARM) means a 1% increase will result more in the vote going to a Republican. It is important to note that all of the
+coeffients have very small values which means some have minimal impacts. The MSE is also somewhat high at a value of 0.45. Despite this, I think this model
+is still useful. Finally, the constant is positive 1.26 which means when all of the other coefficients are set to 0, there
+will be a value of 1.26. I will proceed with this model and the variables.
+	
+**Logit** **model:**
+
+(Uses the cumulative standard logistic distribution)
+
+	logit repub age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union
+	
+	estimates store Logit, title(Logit)
+	
+Postestimation Analysis:	
+	
+	fitstat
+	
+Mean Predictions:
+	
+	mtable, atmeans
+	
+Marginal Effect:
+
+	margins, dydx(age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union) continuous atmeans
+	
+**Logit** **Interpretation** **&** **Justification:**
+From the above results, we can see the Prob > Chi2 value is 0.000 which means the combined effect of all the variables in the model is not different from 0 and therefore 
+means we have some relevant explanatory power with this model. Similar to the OLS model, a lot of the same coeffients are statistically insignifanct. Despite this, I still
+want to include them in the model because I believe they provide relevant information. The log-likelihood value is -245.11122. I will use this value to compare with my probit model.
+We want to maximize this value so the less negative it is, the better. The pseudo R2 is reported to be 0.1840 which is pretty close to our desired range of 0.2-0.4 so we can say the model has good fit and good predicative ability.
+I will proceed with this model and the variables.
+	
+**Probit** **model:**
+
+(Uses the standard normal distribution)
+
+	probit repub age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union
+	
+	estimates store Probit, title(Probit)
+
+Postestimation Analysis:	
+	
+	fitstat
+	
+Mean Predictions:
+	
+	mtable, atmeans
+	
+Marginal Effect:
+
+	margins, dydx(age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union) continuous atmeans
+
+**Probit** **Interpretation** **&** **Justification:**
+From the above results, we can see the Prob > Chi2 value is 0.000 which means the combined effect of all the variables in the model is not different from 0 and we therefore 
+means we have some relevant explanatory power with this model. Similar to the OLS model and logit model, a lot of the same coeffients are statistically insignifanct. Despite this, I still
+want to include them in the model because I believe they provide relevant information. The log-likelihood value is -245.26626. This value is close to the logit value but it is not as good.
+We want to maximize this value so the less negative it is, the better. The pseudo R2 is reported to be 0.1834 which is pretty close to our desired range of 0.2-0.4 so we can say the model has good fit and good predicative ability.
+I will proceed with this model and the variables.
+	
+**MODEL** **DIFFERENCES:**
+I now wanted to look at the differences between the 3 models by comparing their marginal effects and parameter estimates.
+For the marginal effects, we can see all of the signs match up. Marginal effects that are negative and positive in the logit model are also the same in the probit model. 
+The probit and logit models are different from the OLS model in this instance with coefficients like BLUCLLR and RURLFARM where it is positive for OLS and negative for probit and logit.
+In terms of the marginal effect's magnitude, they vary but only by small amounts. This is to be expected. Once again, a good amount of the paramters are shown to be 
+statistically insignificant in all 3 models. The marginal effects for each are printed below:
+
+	estout OLS Logit Probit
+
+**Important** **Note:** One other thing I wanted to point out is in relation to the data set. Since this was taken from the 1997-1998 105th  Congress, there may some be some changes in our parameter
+estimates that we would not quite expect. This may be a result of a relalignment caused from 1994 when the republicans gained 80+ seats (a very large amount for that time) in the House
+of Representatives. Additionally, Clinton's relection took place in 1996 which may have caused a split government and resulted in more change. In terms of some of the parameters
+like rurlfarm which is negative (sways towards a democrat), this may be a result these moments in history. We would expect coefficients like this to be positive and help the Republican
+vote. 
+
+- I will discuss later in this problem set which model I think is better to use based on the parameters and other estimates I have calculated. 
+
+#### (c) 
+Calculate p(yi|xiB) and the model prediction of whether a district is Republican or not. 
+
+- I am going to use the **Logit** model to predict this. 
+
+	logit repub age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union
+	
+- mchange predicts changes in probabilities when the indepdent variables change.
+
+	mchange
+
+	predict repub_hat
+	
+	list repub repub_hat if _n <= 15
+	
+The actual outcome of the first 15 districts reveals some errors.
+
+- Correct - Actually Republican , Predicted Republican: Districts 3,5,7,11,12,15 = 6/15 = 40%
+
+- Error - Actually Republican, Predicted Democrat: Districts 1,2,4,13 = 4/15 = 26.67%
+
+- Correct - Actually Democrat, Predicted Democrat: Districts 8,14 = 2/15 = 13.33%
+
+- Error - Actually Democrat, Predicted Republican: Districts 6,9,10 = 3/15 = 20%
+
+- **Overall** **Correctly** **Classified** **Districts:** 3, 5, 7, 8, 11, 12, 14, 15 = 8/15 = **53.33%**
+
+	lstat
+
+- From the contigency table (lstat command), we can see the model correctly classified 310/434 = 71.43% of our data. This is an improvement over just looking at the first 15 districts.
+The model performs poorly in two places. It classified 45 observations (45/434 = 10.37%) as Democrat when they were in fact Republican. 
+It also classified 79 observations (79/434 = 18.20%) as Republican when they were in fact Democrats. Overall, the model seems to perform worse when classifying Democrats.
+
+#### (d)
+Explain how the Probit probability is derived from model errors, the predicted mean of the distribution for each individual, and the probability distribution:
+
+- The probability is derived from its normal distribution. From the steps below, we can see how the probability Pr(Y = 1|X) is derived
+from the model errors ($\epsilon$), the predicted mean ($\beta$) and the probability distribution ($\phi$).
+
+Pr(Y = 1|X)
+
+Pr(Y-star > 0)
+
+Pr(X'$\beta$ + $\epsilon$ > 0)
+
+Pr($\epsilon$ > -X'$\beta$)
+
+Pr($\epsilon$ < X'$\beta$)
+
+$\phi$(X'$\beta$)
+
+Assumption: Error terms are independent and normally distributed
+
+	probit repub age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union
+
+	predict probit_hat
+
+	twoway kdensity probit_hat
+	graph export probit_hat.png, replace
+
+![Density Plot of Probit Model](probit_hat.png)
+
+**Note:** I have drawn an arbitrary CDF of the probit separately to further illustrate this.
+
+#### (e)
+Use the model to forecast which district the Democrats should focus their resources on in the next election cycle:
+
+The democrats could focus their resources on places that **were** **in** **fact** **Republican,** **but** **were** **predicted** **Democratic**. For our study, this is represented by 45 districts.
+Moreover, the democrats could focus their resources on places where the **predicted** **probabilities** **are** **hovering** **around** **the** **0.5** **mark**. If they put more of their resources
+into these districts, it may give them the necessary edge to push them below that 0.5 threshold (Repub > 0.5) and give them the democratic vote. 
+In practice this looks like this:
+
+	list cd if repub_hat <= 0.5 & repub == 1
+	
+From this output, we can see the 45 districts which democrats should focus on to tip the scales in their favor. Note, this number matches up with the value 
+given in the lstat contingency table. 
+
+#### (f)
+For both models, discuss the predictive accuracy by looking at CountR2 and McFadden's R2.
+
+- I ran the fitstat command with my original outputs (part b). 
+
+- The reported CountR2 from the logit model was 71.4 and the probit model was 70.7.
+This means the logit model correctly classified 71.4% of the sample and the probit model correctly classified 70.7% of the sample.
+This "goodness of fit" measure is capturing how much of the data has been correctly classified. This is similar to a confusion matrix
+in machine learning which reveals type 1 and type 2 errors. In the case of CountR2 though, it is just showing the correct (non-error) portion.
+
+- The reported McFadden's R2 from the logit model was 0.184 and the probit model was 0.184. 
+This "goodness of fit" measure has an intuitive appeal in that it is bounded by zero and one and it increases when variables are added
+to the model. Unlike regular R2, there is no way to make the McFadden's R2 reach one. Moreover, the values between zero and one have no natural interpretation.
+Based on an online source, values between 0.2-0.4 represent excellent model fit. The value 0.184 is pretty close so we can say it has good fit and good predicative ability.
+
+
+#### (g)
+Comparing the logit and probit models, which do I recommend?:
+
+- To answer this question we want to think about wether a standard normal distribution, or a logistic distribution, 
+is the better choice when it comes to modelling the link between our discrete dependent variable and the regressors (covariates).
+We can start by examining the information criteria of the Logit and Probit models. The AIC is 512.222 for logit and 512.533 for probit. This is a very small difference
+but it reveals our logit model is a little better. According to the CountR2, the logit model is also better with a value of 71.4 versus the probit of 70.7.
+Finally the log likelihood value for the logit model is greater than the probit model with a values of -245.111 and -245.266 respectively. Based on these three points,
+I would recommend using the **logit** **model**.
+
+#### (h)
+Predict the number of districts who would be Republican if the share of African Americans living in the district
+increased by 20%. We can use the model parameters and probabilities to interpret this scenario. All of the parameter estimates 
+are kept the same with the model. Rather than adjusting what has already been made, we instead want to think of a reality where just the BLACK variable is adjusted
+and then we compare it to the original model. This is done through a process like this:
+
+	logit repub age65 black blucllr cd city gvtwrkr rurlfarm urban unemplyd union
+	
+	predict phat 
+
+	replace black = black*1.2
+	
+	predict phat_black 
+	
+	gen pchange = 100 * (phat_black - phat) / phat
+	
+	sum pchange phat phat_black if _n <= 15
+	
+- According to these results, when the African American population increases by 20% in each of the first districts,
+a **negative** **8.399** change is evident. This is a very sizeable change which means all of those percentages that were hovering around the 50%
+mark would now drop below and classify the district as democratic! This makes sense intuitively since the African American vote tends to 
+be democratic. 
+
+#### (i)
+Describe how the matrix of second derivations (information matrix) of the Likelihood Function, is useful for calculating standard errors:
+
+The inverse of the information matrix for the Likelihood Function is our estimated variance covariance
+matrix for the parameters with standard errors for parameter i. In more detail, the information matrix is the negative of the expected value of the Hessian Matrix which is
+the matrix of second derivatives of the likelihood with respect to the parameters. Then the standard errors are simply the square roots of the diagonal 
+terms in the variance-covariance matrix. 
+
+The curvature of the likelihood function provides information on certainty about the parameter estimates.
+The second derivative of the likelihood function is a measure of the likelihood function's curvature, which provides information about the uncertainty
+with which we have estimated the parameters.
+	
+	
+	
+	
