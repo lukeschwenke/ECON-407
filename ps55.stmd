@@ -1,0 +1,328 @@
+% Problem Set 5
+% Luke Schwenke
+% December 7, 2018
+
+	set linesize 255
+
+# Question 1
+
+- Note: Attached as a separate handwritten sheet
+
+Part (c) calculations:
+
+	gen z = -1
+
+	set obs 1
+  
+	replace z = -1 in 1
+  
+	gen pdf = normalden(8, 10, 2)
+  
+	gen cdf = normal(z)
+  
+	gen inv_mill = pdf / (1-cdf)
+
+Inverse Mills Ratio:
+	
+	di inv_mill
+	
+	gen expected_ystar = 10 + 2*inv_mill
+	
+E(yi-star|yi-star>a):
+	
+	di expected_ystar
+	
+	gen expected_yi = cdf*8 + (1-cdf)*(expected_ystar)
+	
+E(yi):
+	
+	di expected_yi
+
+# Question 2: The Heckman Model
+
+	clear
+	webuse set http://rlhick.people.wm.edu/econ407/data
+	webuse deb_munkin_trivedi
+
+#### (a)
+
+Estimate an OLS model of medical expenditures:
+
+Dependent Variable: 
+
+- lambexp = ln of Ambulatory medical expenditures (excluding dental and outpatient mental)
+
+Independent Variables:
+ 
+- totchr = Number of chronic diseases
+
+- age = Age in years / 10
+
+- ins = 1 if enrolled in health insurance (PPO or HMO), 0 otherwise
+
+	reg lambexp ins totchr age
+	
+	hist ambexp
+	graph export ambexp.png, replace
+
+![Histogram of ambexp](ambexp.png)
+	
+	hist lambexp
+	graph export lambexp.png, replace
+
+![Histogram of lambexp](lambexp.png)
+
+**Explanation:**
+
+- I chose **lambexp** as my dependent variable for the OLS model because it looks more normal in its distribution
+from the above histogram. This will be more useful for the OLS model as well as in our Heckman model below. For my first
+independent variable, I had selected **ins** because whether or not a person has insurance will greatly determine
+their personal medical expenditures since the insurance company will pay the majority of the bills aside from
+the patient's deductible. The next variable I thought would be useful for predicting medical expenditures is **totchr**
+because people with more chronic diseases such as heart or lung disorders are most likely going to have much higher medical
+expenses than people without those chronic diseases. They may require more medication, checkups, or even surgeries that 
+people without chronic diseases would not have. **age** is also a useful predictor because most higher medical expenses are for
+older people for obvious reasons. At higher ages, you are more likely to develop problems that require medical attention or medication
+to mitigate the effects of the illness.
+
+- The F-statistic is 0 which deems our overall model to be useful and the Adjusted R-Squared value reveals 16.58% of the variability
+in medical expenditures can be explained by the model. 2 of the coefficients I used are statistically significant but ins is not. Despite this,
+I want to include the variable because I think it captures useful information. The signs of the coefficients match my intuition above.
+Older people and people with more chronic diseases have higher medical expenditures whereas people with insurance have lower expenditures. 
+
+- The histogram of ambexp suggests there may be evidence of **censoring** at 0 for missing values. This would explain why 
+they 0 column is much higher than the rest of the distribution. People who don't have medical expenditures are essentially coded as 0.
+
+- One downside is log is forcing the distribution to be normalized and we may be losing some key information. 
+Taking the logarithm can adjust the magnitude of the values in a large way.
+These magnitude changes are evident specifically with the outliers we can see in the logarithmic histogram.
+Additionally taking the natural log will make any non-positive values **undefined/imaginary** which may explain why the graph adjusts so much.
+
+#### (b)
+
+- I will use the log-transformed lambexp as my dependent variable here: 
+
+	heckman lambexp ins totchr age, select(dambexp = blhisp educ ins female)
+	
+**Discussion** **of** **variables:**
+
+- As mentioned above, I will use lambexp as my dependent variable since it is more normalized and will provide better values for us. I also keep
+the same variables in the part of the Heckman model as I did in my OLS model. The x's have the same intuition as above. 
+	
+-  We want our z related not to spending but to what explains the censoring in y. 
+At first I considered using insurance as z since it is related to expenditure but it does not explain this censoring. Educ is another option I thought about using
+because people with more education generally take better care of themselves and will not frequent hospitals as much and have higher bills. 
+But I decided to use **dambexp** because it is an indicator function (dummy 1 & 0) for censoring. This is what we want to use as z. 
+
+- Now I will discuss my w's. w should be something that relates to this dambexp. The w's can also be included in the prediction
+of the dependent variable lambexp. In this case, **Educ** is an option to consider 
+because people with more education generally take better care of themselves and will not have as serious hospital complications that are costly.
+**blhisp** is also a useful predictor for this binary indicator because people who fall into this category will most likely have higher expenditures once they 
+are at the hospital. Part of this intuition can be captured in the ins variable as well because the blhisp most likely have lower amounts of insurance.
+**ins** is good to include in both sides since it is a very strong indicator for how much money people are going to pay. Finally, **female** is useful since
+women tend to work less physically endangering jobs that would have more serious medical issues once at the hospital. 
+
+- **Summary:** I will proceed with dambexp as my z variable with blhisp, educ, ins, and female for the w's. My same intuition applies to the x's mentioned in part (a).
+
+- From the output, we can see the reported prob > chi2 value is 0.0000 which means this heckman model is a useful and good option for us. 
+	
+**Conditions:**
+
+- w and x have to be sufficiently different but $\gamma$ and $\beta$ for the selection and continuous.
+There must be some regressor that identifies the selection mechanism independent of the effect in the equation of interest 
+to properly identify a model. This will be discussed more in part (c). Other conditions for variables are as follows:
+1. The error of both the selection and the amounts equation are correlated and distributed normally.
+2. The explanatory variables in the selection equation are independent of the error term.
+3. The explanatory variables in the amounts equation are independent of the error term.
+
+#### (c) 
+
+Apart from the statistical mechanics of the model, can you describe any economic rationale for a two-step (selection and then amounts) 
+process for medical expenditures:
+
+- In terms of economic rationale for a two-step process for medical expenditures, we can set the stage
+for choosing our w(s). We want a model that needs to talk about behavior but needs to have a behavioral reason
+for why the w is not included with the x's. We can ask the question, "what matters once you have made it to the hospital in terms
+of what your bill is going to be? As mentioned above, Educ is an option to consider 
+because people with more education generally take better care of themselves and will not have as serious hospital complications that are costly.
+blhisp is also a useful predictor for this binary indicator because people who fall into this category will most likely have higher expenditures once they 
+are at the hospital. Part of this intuition can be captured in the ins variable as well because the blhisp most likely have lower amount of insurance.
+ins is good to include in both sides since it is a very strong indicator for how much money people are going to pay. Finally, female is useful since
+women tend to work less physically endangering jobs that would have more serious medical issues once at the hospital. 
+
+- The basic idea of a sample selection model is that the outcome variable, in our case medical expenditures, is only observed if some criterion, 
+defined with respect to variables z.
+The common form of the model has two stages. In the first stage, a dichotomous variable z determines whether or not y is observed, y being observed 
+only if z=1 (and you estimate a model with some matrix of independent variables w and get some coefficients alpha, the model is estimated, of course, 
+with an error term, e); in the second state, we model the expected value of y, conditional on it being observed. So, we observe z, a dummy variable, 
+which is a realization of an unobserved (or latent) continuous variable z*, having a normally distributed, independent error, e, with a mean zero and a 
+constant variance sigma squared e. For values of z=1, we observe y, which is the observed realization of a second latent variable (and model that with some 
+independent variables X and get a vector of coefficients beta), y*, which has a normally distributed, independent error, u, with a mean zero and a constant 
+variance sigma squared U. 
+The two errors are assumed to have a correlation rho. The joint distribution of u and e is bivariate normal.
+
+#### (d) 
+
+- Note: Attached as a separate handwritten sheet
+
+#### (e)
+
+- E[y|y obs]:
+	predict ycond, ycond
+	margins, predict(ycond) eyex(ins female totchr blhisp age educ)
+	
+**Interpret** **Elasticity:** We are examining the expected value of their expenditures, conditional on them having positive expenditures for that year.
+- ins: For a one unit increase in the person enrolled in health insurance conditional on them having positive expenditures, the selected ambulatory expenditures decreases 0.0027398.
+
+- totchr: For a one unit increase in the number of chronic diseases conditional on them having positive expenditures, the selected ambulatory expenditures increases 0.0372919.
+
+- blhisp: For a one unit increase in black/hispanic people conditional on them having positive expenditures, the selected ambulatory expenditures decreases 0.0103162.
+
+- age: For a one unit increase in age conditional on them having positive expenditures, the selected ambulatory expenditures increases 0.1367921.
+
+- educ: For a one unit increase in education conditional on them having positive expenditures, the selected ambulatory expenditures increases 0.0414369.
+
+- female: For a one unit increase in female conditional on them having positive expenditures, the selected ambulatory expenditures decreases 0.0136653.
+
+- Prob(y-obs):
+	predict probobs, psel
+	margins, predict(psel) eyex(ins female totchr blhisp age educ)
+ 
+**Interpret** **Elasticity:** We are examining the probability someone has positive expenditures for that year.
+
+- ins: For a one unit increase in the person enrolled in health insurance, the probability someone has positive expenditures for that year increases 0.013042
+
+- blhisp: For a one unit increase in black/hispanic people, the probability someone has positive expenditures for that year decreases 0.057192
+
+- educ: For a one unit increase in education, the probability someone has positive expenditures for that year increases 0.2021433
+
+- female: For a one unit increase in female, the probability someone has positive expenditures for that year increases 0.0575839
+
+- E[y]:
+	predict y, yexpected
+	margins, predict(yexpected) eyex(ins female totchr blhisp age educ)
+
+**Interpret** **Elasticity:** We are examining the expected value of their expenditures recognizing that some won't have any expenditures. (taking account for censoring)
+
+- ins: For a one unit increase in the person enrolled in health insurance, the selected ambulatory expenditures increases 0.0103022
+
+- totchr: For a one unit increase in the number of chronic diseases, the selected ambulatory expenditures increases 0.0372919
+
+- age: For a one unit increase in age, the selected ambulatory expenditures increases 0.1367921
+
+- blhisp: For a one unit increase in black/hispanic people, the selected ambulatory expenditures decreases 0.0675081
+
+- educ: For a one unit increase in education, the selected ambulatory expenditures increases 0.2435802
+
+- female: For a one unit increase in females, the selected ambulatory expenditures increases 0.0712491
+
+- E[y*]:
+	predict xb
+	margins, predict(xb) eyex(ins female totchr blhisp age educ)
+	
+ **Interpret** **Elasticity:** We are examining the expected values of our whole population. (not accounting for censoring)
+
+- ins: For a one unit increase in the person enrolled with health insurance, the ambulatory expenditures in the whole sample decreases 0.0052516 
+
+- totchr: For a one unit increase in the number of chronic diseases, the ambulatory expenditures in the whole sample increases 0.0359269
+
+- age: For a one unit increase in age, the ambulatory expenditures in the whole sample increases 0.1307141
+
+**Case Study:**
+	
+1. Suppose a policy increases enrollments in insurance. How does health expenditures change?
+- **Answer:** E(Y) 
+
+2. Suppose we expect our population to age. How does the probability of having positive health expenditures for the average individual change?
+- **Answer:** Prob(Y|Y observed)
+
+3. Suppose we expect chronic diseases to decline. How does health expenditures change for those reporting positive health expenditures?
+- **Answer:** E(Y|Y observed)
+
+#### (f) 
+
+Manually calculate the log-likelihood function value evaluated at the model estimates:
+
+    heckman lambexp ins totchr age, select(dambexp = blhisp educ ins female)
+	
+	gen z = 1
+  
+	replace z=0 if lambexp == .
+
+	gen sigma = e(sigma)
+    
+	gen rho = e(rho)
+    
+	predict wg, xbsel
+    
+	predict beta, xb
+    
+	gen probnotcensored = normal(wg)
+  
+	gen argument = (wg+rho * ((lambexp-beta) / sigma))/(1-rho^2)^(1/2)
+
+	gen contrib_like_select = ln(normal(argument)) - 1/2*((lambexp - beta)/sigma)^2 - ln(sigma*sqrt(2*_pi))
+  
+    replace contrib_like_select = 0 if z == 0
+  
+	gen contrib_like_not_select = ln(1 - normal(wg))
+	
+	replace contrib_like_not_select = 0 if z == 1
+	
+	gen log_likely_hood = contrib_like_select + contrib_like_not_select
+  
+	di log_likely_hood
+	
+	sum
+	
+	di log_likely_hood * _n
+	
+    sum log_likely_hood
+    
+	di r(mean)*_N
+	
+**Conclusion:** From the last line above, we can see this exactly matches the log-likelihood value from the Heckman model.
+
+#### (g)
+
+Comment on the suitability of the OLS, Tobit, and Heckman model:
+
+    heckman lambexp ins totchr age, select(dambexp = blhisp educ ins female)
+
+- We can first compare the heckman and OLS model by doing a **hypothesis** **test**. From the results of the heckman model right
+above, we can see our Prob > chi2 = 0.0000 which is less than 0.05. We therefore will Reject our null hypothesis and conclude we want
+to use the heckman model. Now we want to considering using a tobit for this type of application. With the tobit model,
+we are assuming that there is a latent relationship between non-negative y and x which may be measured by y* = a + Bx +ui where ui
+is normally distributed. Y* is not observable whereas in ordinary regression Y is observalble. Moreover, B could not accurately be
+estimated because the slope would be underestimated and the intercept would be over-estimated. In tobit, using Y*, the estimated B is more
+accurate. For this particular problem though and the discussion of ambulatory expenditures, I would say the Heckman model is most suitable.
+
+#### (h)
+
+Describe the differences between "Two-Step" and "Full Information Maximum Likelihood" (FIML) estimation of the Heckman Model:
+
+**Two-Step** **Process:**
+With this method, you first estimate the probit equation by maximum likelihood to obtain estimates of $\gamma$. The Inverse Mills ratio 
+must be generated from the estimation of a probit model, a logit cannot be used. The probit model assumes that the error term follows a 
+standard normal distribution. The estimated parameters are used to calculate the Inverse Mills ratio, which is then included as an additional 
+explanatory variable in the OLS estimation. Part (c) also goes into this model in depth. 
+
+**FIML** **Process:**
+FIML estimation consists of finding the parameter values that maximize the likelihood
+of the data. In this method, missing values are not replaced or imputed, but the missing data is handled within the analysis model. 
+The model is estimated by a full information maximum likelihood method, that way all available information is used to estimate the model. 
+In full information maximum likelihood the population parameters are estimated that would most likely produce the estimates from the sample data that is analyzed. 
+
+**Conclusion:**
+- I would recommend usting the **Two-Step** **process** for the estimation of the Heckman Model, which is what we have used on this problem set. I recommend this because
+the Two-Step process provides good starting values for the maximum likelihood estimation as well as further exploratory empirical work like we have conducted.
+The Two-Step method deals with potential selection bias through the correction factor. As mentioned, the test for rho=0 also failed. Finally, our particular study can 
+be better analyzed in quantitative and behavioral way because we use the selection equation before regression which helps explain the context of the problem.
+
+
+
+
+
+
+	
+
